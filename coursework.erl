@@ -11,8 +11,8 @@ find_pair(Line,G) ->
 get_pair(Line,0) -> [];
 get_pair(Line,G) ->
 	case length(Line) > G of
-		true -> [{{hd(Line),lists:nth(G+1,Line)},1} | get_pair(Line,G-1)];
-		false -> [{{hd(Line),lists:nth(length(Line),Line)},1} | get_pair(Line,length(Line)-2)]
+		true -> [{hd(Line),lists:nth(G+1,Line)} | get_pair(Line,G-1)];
+		false -> [{hd(Line),lists:nth(length(Line),Line)} | get_pair(Line,length(Line)-2)]
 	end.
 
 %% Removes duplicate elements from a list
