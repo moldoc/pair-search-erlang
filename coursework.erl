@@ -1,5 +1,5 @@
 -module(coursework).
--export([find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2]).
+-export([find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
 
 %% Find character pairs of a given gap on a single line
 find_pair(Line,G) ->
@@ -15,7 +15,7 @@ get_pair(Line,G) ->
 		false -> [{hd(Line),lists:nth(length(Line),Line)} | get_pair(Line,length(Line)-2)]
 	end.
 
-%% Removes duplicate elements from a list
+%% Remove duplicate elements from a list
 %% Called from each line
 remove_duplicates(List) ->
 	lists:usort(List).
@@ -29,3 +29,15 @@ update_map(Key,Charmap) ->
 		true -> maps:update(Key,maps:get(Key,Charmap,1)+1,Charmap);
 		false -> maps:put(Key,1,Charmap)
 	end.
+	
+%% Return the lines of a file in a list
+return_lines(Filename) -> 
+	{ok, Contents} = file:read_file(Filename),
+	string:tokens(binary:bin_to_list(Contents), "\n").
+
+%% Return the list of character pairs on a list of lines
+return_charlist([],G) -> [];
+return_charlist(Contents,G) ->
+	Line = lists:nth(1, Contents),
+	Uniques = remove_duplicates(find_pair(Line,G)),
+	Uniques ++ return_charlist(lists:nthtail(1,Contents),G).
