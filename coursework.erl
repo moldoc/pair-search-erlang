@@ -1,7 +1,9 @@
 -module(coursework).
 -export([find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
 
-%% Find character pairs of a given gap on a single line
+%% ALREADY CALLED FROM INSIDE OTHER FUNCTIONS
+
+% Find character pairs of a given gap on a single line
 find_pair(Line,G) ->
 	case length(Line) > 1 of
 		true -> get_pair(Line,G) ++ find_pair(lists:nthtail(1,Line),G);
@@ -15,12 +17,15 @@ get_pair(Line,G) ->
 		false -> [{hd(Line),lists:nth(length(Line),Line)} | get_pair(Line,length(Line)-2)]
 	end.
 
-%% Remove duplicate elements from a list
-%% Called from each line
+% Remove duplicate elements from a list
+% Called from each line
 remove_duplicates(List) ->
 	lists:usort(List).
 
-%% Build the character map from the list of character pairs
+
+%% CALLED AFTER ALL FILES PROCESSED
+
+% Build the character map from the list of character pairs
 build_char_map([],Charmap) -> Charmap;
 build_char_map(Charlist,Charmap) -> build_char_map(lists:nthtail(1,Charlist),update_map(lists:nth(1,Charlist),Charmap)).
 
@@ -30,12 +35,15 @@ update_map(Key,Charmap) ->
 		false -> maps:put(Key,1,Charmap)
 	end.
 	
-%% Return the lines of a file in a list
+	
+%% EVERY FILE CALLS THESE FUNCTIONS
+
+% Return the lines of a file in a list
 return_lines(Filename) -> 
 	{ok, Contents} = file:read_file(Filename),
 	string:tokens(binary:bin_to_list(Contents), "\n").
 
-%% Return the list of character pairs on a list of lines
+% Return the list of character pairs on a list of lines
 return_charlist([],G) -> [];
 return_charlist(Contents,G) ->
 	Line = lists:nth(1, Contents),
