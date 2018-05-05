@@ -1,5 +1,16 @@
 -module(coursework).
--export([find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
+-export([main/0,find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
+
+%% MAIN FUNCTION
+
+main() ->
+	Contents = return_lines("input.txt"),
+	{G,Rest} = string:to_integer(lists:nth(1, Contents)),
+	{K,Rest2} = string:to_integer(lists:nth(2, Contents)),
+	Files = lists:nthtail(2,Contents),
+	% Do for every file
+	return_charlist(return_lines(lists:nth(1,Files)),G).
+	
 
 %% ALREADY CALLED FROM INSIDE OTHER FUNCTIONS
 
