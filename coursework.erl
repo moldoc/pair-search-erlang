@@ -1,5 +1,5 @@
 -module(coursework).
--export([main/0,find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
+-export([main/0, fileloop/3, start/3, stop/1, collect_results/1, find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
 
 %% MAIN FUNCTION
 
@@ -8,8 +8,32 @@ main() ->
 	{G,Rest} = string:to_integer(lists:nth(1, Contents)),
 	{K,Rest2} = string:to_integer(lists:nth(2, Contents)),
 	Files = lists:nthtail(2,Contents),
-	% Do for every file
-	return_charlist(return_lines(lists:nth(1,Files)),G).
+	Main_PID = spawn(coursework,collect_results,[[]]),
+	fileloop(Files, Main_PID, G).
+	
+fileloop(Files,Main_PID,G) ->
+	case length(Files) > 0 of
+		true -> spawn(coursework,start,[Files,Main_PID,G]);
+		false -> spawn(coursework,stop,[Main_PID])
+	end.
+
+start(Files,Main_PID,G) ->
+	Result = return_charlist(return_lines(lists:nth(1,Files)),G),
+	Main_PID ! Result,
+	fileloop(lists:nthtail(1,Files), Main_PID,G).
+	
+stop(Main_PID) ->
+	Main_PID ! all_done.
+
+collect_results(Charlist) ->
+	receive
+		all_done ->
+			Newmap = maps:new(),
+			Final = build_char_map(Charlist,Newmap),
+			io:format("~p~n", [maps:to_list(Final)]);
+		Result ->
+			collect_results(Charlist ++ Result)
+	end.
 	
 
 %% ALREADY CALLED FROM INSIDE OTHER FUNCTIONS
@@ -51,7 +75,7 @@ update_map(Key,Charmap) ->
 
 % Return the lines of a file in a list
 return_lines(Filename) -> 
-	{ok, Contents} = file:read_file(Filename),
+	{Response, Contents} = file:read_file(Filename),
 	string:tokens(binary:bin_to_list(Contents), "\n").
 
 % Return the list of character pairs on a list of lines
