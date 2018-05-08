@@ -30,7 +30,10 @@ collect_results(Charlist) ->
 		all_done ->
 			Newmap = maps:new(),
 			Final = build_char_map(Charlist,Newmap),
-			io:format("~p~n", [maps:to_list(Final)]);
+			List = maps:to_list(Final),
+			F = fun({{X1,Y1},V1}, {{X2,Y2},V2}) -> V1 > V2 end,
+			Finallist = lists:sort(F,List),
+			io:format("~p~n", [Finallist]);
 		Result ->
 			collect_results(Charlist ++ Result)
 	end.
@@ -84,3 +87,4 @@ return_charlist(Contents,G) ->
 	Line = lists:nth(1, Contents),
 	Uniques = remove_duplicates(find_pair(Line,G)),
 	Uniques ++ return_charlist(lists:nthtail(1,Contents),G).
+
