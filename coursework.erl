@@ -1,5 +1,5 @@
 -module(coursework).
--export([main/0, fileloop/3, start/3, stop/1, collect_results/1, find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
+-export([main/0, fileloop/3, start/3, stop/1, collect_results/2, find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
 
 %% MAIN FUNCTION
 
@@ -8,7 +8,7 @@ main() ->
 	{G,Rest} = string:to_integer(lists:nth(1, Contents)),
 	{K,Rest2} = string:to_integer(lists:nth(2, Contents)),
 	Files = lists:nthtail(2,Contents),
-	Main_PID = spawn(coursework,collect_results,[[]]),
+	Main_PID = spawn(coursework,collect_results,[[],K]),
 	fileloop(Files, Main_PID, G).
 	
 fileloop(Files,Main_PID,G) ->
@@ -25,7 +25,7 @@ start(Files,Main_PID,G) ->
 stop(Main_PID) ->
 	Main_PID ! all_done.
 
-collect_results(Charlist) ->
+collect_results(Charlist,K) ->
 	receive
 		all_done ->
 			Newmap = maps:new(),
@@ -33,9 +33,9 @@ collect_results(Charlist) ->
 			List = maps:to_list(Final),
 			F = fun({{X1,Y1},V1}, {{X2,Y2},V2}) -> V1 > V2 end,
 			Finallist = lists:sort(F,List),
-			io:format("~p~n", [Finallist]);
+			io:format("~p~n", [lists:sublist(Finallist,K)]);
 		Result ->
-			collect_results(Charlist ++ Result)
+			collect_results(Charlist ++ Result,K)
 	end.
 	
 
