@@ -5,8 +5,8 @@
 
 main() ->
 	Contents = return_lines("input.txt"),
-	{G,Rest} = string:to_integer(lists:nth(1, Contents)),
-	{K,Rest2} = string:to_integer(lists:nth(2, Contents)),
+	{G,_} = string:to_integer(lists:nth(1, Contents)),
+	{K,_} = string:to_integer(lists:nth(2, Contents)),
 	Files = lists:nthtail(2,Contents),
 	Main_PID = spawn(coursework,collect_results,[[],K]),
 	fileloop(Files, Main_PID, G).
@@ -31,7 +31,7 @@ collect_results(Charlist,K) ->
 			Newmap = maps:new(),
 			Final = build_char_map(Charlist,Newmap),
 			List = maps:to_list(Final),
-			F = fun({{X1,Y1},V1}, {{X2,Y2},V2}) -> V1 > V2 end,
+			F = fun({{_,_},V1}, {{_,_},V2}) -> V1 > V2 end,
 			Finallist = lists:sort(F,List),
 			io:format("~p~n", [lists:sublist(Finallist,K)]);
 		Result ->
@@ -48,7 +48,7 @@ find_pair(Line,G) ->
 		false -> []
 	end.
 
-get_pair(Line,0) -> [];
+get_pair(_,0) -> [];
 get_pair(Line,G) ->
 	case length(Line) > G of
 		true -> [{hd(Line),lists:nth(G+1,Line)} | get_pair(Line,G-1)];
@@ -78,11 +78,11 @@ update_map(Key,Charmap) ->
 
 % Return the lines of a file in a list
 return_lines(Filename) -> 
-	{Response, Contents} = file:read_file(Filename),
+	{_, Contents} = file:read_file(Filename),
 	string:tokens(binary:bin_to_list(Contents), "\n").
 
 % Return the list of character pairs on a list of lines
-return_charlist([],G) -> [];
+return_charlist([],_) -> [];
 return_charlist(Contents,G) ->
 	Line = lists:nth(1, Contents),
 	Uniques = remove_duplicates(find_pair(Line,G)),
