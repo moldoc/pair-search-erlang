@@ -34,10 +34,8 @@ collect_results(Charlist,K,Lines) ->
 			List = maps:to_list(Final),
 			F = fun({{_,_},V1}, {{_,_},V2}) -> V1 > V2 end,
 			Finallist = lists:sort(F,List),
-			%io:format("~p~n", [lists:sublist(Finallist,K)]);
-			%prettify(hd(Finallist));
-			io:format("~p~n", [prettify(lists:sublist(Finallist,K), Lines)]);
-			%file:write_file("output.txt", io_lib:fwrite("~s~n",[lists:sublist(Finallist,K)]));
+			Output = [lists:append(prettify(lists:sublist(Finallist,K), Lines))],
+			file:write_file("output.txt", io_lib:fwrite("~s~n", Output));
 		Result ->
 			collect_results(Charlist ++ hd(Result),K,lists:last(Result))
 	end.
@@ -53,7 +51,7 @@ prettify(Charlist,Lines) ->
 	C2 = tl(tuple_to_list(hd(tuple_to_list(Listitem)))),
 	% V String
 	V = integer_to_list(lists:last(tuple_to_list(Listitem))),
-	String = C1 ++ " " ++ C2 ++ " " ++ V ++ " " ++ integer_to_list(Lines),
+	String = C1 ++ " " ++ C2 ++ " " ++ V ++ " " ++ integer_to_list(Lines) ++ "\n",
 	[ String | prettify(tl(Charlist),Lines)].
 	
 
