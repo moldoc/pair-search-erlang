@@ -1,5 +1,5 @@
 -module(coursework).
--export([main/0, fileloop/3, start/3, stop/1, collect_results/2, find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
+-export([main/0, fileloop/4, start/4, stop/1, collect_results/3, find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
 
 %% MAIN FUNCTION
 
@@ -8,24 +8,25 @@ main() ->
 	{G,_} = string:to_integer(lists:nth(1, Contents)),
 	{K,_} = string:to_integer(lists:nth(2, Contents)),
 	Files = lists:nthtail(2,Contents),
-	Main_PID = spawn(coursework,collect_results,[[],K]),
-	fileloop(Files, Main_PID, G).
+	Main_PID = spawn(coursework,collect_results,[[],K,0]),
+	fileloop(Files, Main_PID, G, 0).
 	
-fileloop(Files,Main_PID,G) ->
+fileloop(Files,Main_PID,G,Lines) ->
 	case length(Files) > 0 of
-		true -> spawn(coursework,start,[Files,Main_PID,G]);
+		true -> spawn(coursework,start,[Files,Main_PID,G,Lines]);
 		false -> spawn(coursework,stop,[Main_PID])
 	end.
 
-start(Files,Main_PID,G) ->
-	Result = return_charlist(return_lines(lists:nth(1,Files)),G),
-	Main_PID ! Result,
-	fileloop(lists:nthtail(1,Files), Main_PID,G).
+start(Files,Main_PID,G,L) ->
+	Lines = return_lines(lists:nth(1,Files)),
+	Result = return_charlist(Lines,G),
+	Main_PID ! [Result,L+length(Lines)],
+	fileloop(lists:nthtail(1,Files), Main_PID,G,L+length(Lines)).
 	
 stop(Main_PID) ->
 	Main_PID ! all_done.
 
-collect_results(Charlist,K) ->
+collect_results(Charlist,K,Lines) ->
 	receive
 		all_done ->
 			Newmap = maps:new(),
@@ -33,10 +34,26 @@ collect_results(Charlist,K) ->
 			List = maps:to_list(Final),
 			F = fun({{_,_},V1}, {{_,_},V2}) -> V1 > V2 end,
 			Finallist = lists:sort(F,List),
-			io:format("~p~n", [lists:sublist(Finallist,K)]);
+			%io:format("~p~n", [lists:sublist(Finallist,K)]);
+			%prettify(hd(Finallist));
+			io:format("~p~n", [prettify(lists:sublist(Finallist,K))]),
+			io:format("~p~n", [Lines]);
+			%file:write_file("output.txt", io_lib:fwrite("~s~n",[lists:sublist(Finallist,K)]));
 		Result ->
-			collect_results(Charlist ++ Result,K)
+			collect_results(Charlist ++ hd(Result),K,lists:last(Result))
 	end.
+	
+% Builds a list of strings where each item is the original character pair in
+% form "c1 c2 v"
+prettify([]) -> [];
+prettify(Charlist) ->
+	Listitem = hd(Charlist),
+	C1 = lists:droplast(tuple_to_list(hd(tuple_to_list(Listitem)))),
+	C2 = tl(tuple_to_list(hd(tuple_to_list(Listitem)))),
+	%V = lists:concat(tl(tuple_to_list(Listitem))),
+	String = C1 ++ " " ++ C2,
+	[ String | prettify(tl(Charlist))].
+	%file:write_file("output.txt", io_lib:fwrite("~p~n",[tuple_to_list(hd(tuple_to_list(Listitem)))])).
 	
 
 %% ALREADY CALLED FROM INSIDE OTHER FUNCTIONS
