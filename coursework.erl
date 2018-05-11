@@ -1,5 +1,5 @@
 -module(coursework).
--export([main/0, fileloop/4, start/4, stop/1, collect_results/3, find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
+-export([main/0, fileloop/4, start/4, stop/1, collect_results/3, prettify/2, find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
 
 %% MAIN FUNCTION
 
@@ -36,8 +36,7 @@ collect_results(Charlist,K,Lines) ->
 			Finallist = lists:sort(F,List),
 			%io:format("~p~n", [lists:sublist(Finallist,K)]);
 			%prettify(hd(Finallist));
-			io:format("~p~n", [prettify(lists:sublist(Finallist,K))]),
-			io:format("~p~n", [Lines]);
+			io:format("~p~n", [prettify(lists:sublist(Finallist,K), Lines)]);
 			%file:write_file("output.txt", io_lib:fwrite("~s~n",[lists:sublist(Finallist,K)]));
 		Result ->
 			collect_results(Charlist ++ hd(Result),K,lists:last(Result))
@@ -45,15 +44,17 @@ collect_results(Charlist,K,Lines) ->
 	
 % Builds a list of strings where each item is the original character pair in
 % form "c1 c2 v"
-prettify([]) -> [];
-prettify(Charlist) ->
+prettify([],_) -> [];
+prettify(Charlist,Lines) ->
+	% One row of characters
 	Listitem = hd(Charlist),
+	% C1 and C2 strings
 	C1 = lists:droplast(tuple_to_list(hd(tuple_to_list(Listitem)))),
 	C2 = tl(tuple_to_list(hd(tuple_to_list(Listitem)))),
-	%V = lists:concat(tl(tuple_to_list(Listitem))),
-	String = C1 ++ " " ++ C2,
-	[ String | prettify(tl(Charlist))].
-	%file:write_file("output.txt", io_lib:fwrite("~p~n",[tuple_to_list(hd(tuple_to_list(Listitem)))])).
+	% V String
+	V = integer_to_list(lists:last(tuple_to_list(Listitem))),
+	String = C1 ++ " " ++ C2 ++ " " ++ V ++ " " ++ integer_to_list(Lines),
+	[ String | prettify(tl(Charlist),Lines)].
 	
 
 %% ALREADY CALLED FROM INSIDE OTHER FUNCTIONS
