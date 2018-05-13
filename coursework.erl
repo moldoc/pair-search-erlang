@@ -1,5 +1,5 @@
 -module(coursework).
--export([main/0, fileloop/4, start/4, stop/1, collect_results/3, prettify/2, find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2]).
+-export([main/0, fileloop/4, start/4, stop/1, collect_results/3, prettify/2, find_pair/2, get_pair/2, remove_duplicates/1, build_char_map/2, update_map/2, return_lines/1, return_charlist/2, filterSpaces/1]).
 
 %% MAIN FUNCTION
 
@@ -100,7 +100,13 @@ return_lines(Filename) ->
 % Return the list of character pairs on a list of lines
 return_charlist([],_) -> [];
 return_charlist(Contents,G) ->
+	% ADD HERE SPACE DELETIONS
 	Line = lists:nth(1, Contents),
-	Uniques = remove_duplicates(find_pair(Line,G)),
+	Nospace = filterSpaces(Line),
+	Uniques = remove_duplicates(find_pair(Nospace,G)),
 	Uniques ++ return_charlist(lists:nthtail(1,Contents),G).
 
+filterSpaces(Line) ->
+	F = fun(C) -> C =/= 32 end,
+	lists:filter(F, Line).
+	
